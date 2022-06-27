@@ -1,0 +1,94 @@
+﻿@{ ViewBag.Title = "Notifications"; }
+
+<style>
+    .fake-push {
+        height: 90px;
+        width: 300px !important;
+        background: dodgerblue !important;
+        /*wrapper styles here*/
+    }
+
+        .push-image {
+            /*icon styles here*/
+        }
+
+        .col-push-text b {
+            font-size:large;
+            /*title styles here*/
+        }
+
+        .col-push-text ms {
+            /*message styles here*/
+        }
+    </style>
+
+<h2>Display Instance changes on browser and Push Notification on Database Changes</h2>
+
+@Html.Hidden("Get", Url.Action("Get", "Notifications"))
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+
+    <tbody id="tblInfo">
+    </tbody>
+</table>
+@section scripts {
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    @*<script src="~/Scripts/push_notification.js"></script>*@ @*Push notification plugin refernce*@
+    <script src="~/Scripts/fake-push.min.js"></script>  @*Custome Push Notification refernce *@
+    <script src="~/Scripts/jquery.signalR-2.4.3.min.js"></script>
+    <script src="~/signalr/hubs" type="text/javascript"></script>
+    <script type="text/javascript">
+
+        $(function () {
+
+            // Proxy created on the fly
+            //hubClass name should be in camelCase (eg. notificationHub)
+            var cus = $.connection.notificationHub;
+
+            // Declare a function on the job hub so the server can invoke it
+            cus.client.displayCustomer = function () {
+                getData();
+                //$.notify("Database Updated");
+                $.push(/*Title*/'Notification',/*Message*/'Database Updated',/*icon*/'');
+            };
+
+            // Start the connection
+            $.connection.hub.start();
+            getData();
+        });
+
+        function getData() {
+
+            var $tbl = $('#tblInfo');
+
+            $.ajax({
+                url: $("#Get").val(),
+                type: 'GET',
+                datatype: 'json',
+                success: function (data) {
+                    $tbl.empty();
+
+                    $.each(data.listEmp, function (i, model) {
+                        $tbl.append(
+                            '<tr>'
+                            + '<td>' + model.ID + '</td>'
+                            + '<td>' + model.Name + '</td>'
+                            + '<td>' + model.Price + '</td>'
+                            + '<tr>'
+                        );
+                    });
+                }
+            });
+        }
+
+    </script>
+}
+
+
